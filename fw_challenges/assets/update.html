@@ -22,6 +22,6 @@
 			</ul>
 		</small>
 	</label>
-    <input type="text" class="form-control chal-decay" name="endpoints" value="{{ challenge.endpoints}}" required>
+    <input type="text" class="form-control chal-decay" name="endpoints" value="{{ ','.join(challenge.endpoints)}}" required>
 </div>
 {% endblock %}

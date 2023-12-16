@@ -1,11 +1,15 @@
+import glob
+import importlib
+import os
 import json
 import flask
 
 from CTFd.models import db
-from CTFd.utils.decorators import authed_only,get_current_user
+from CTFd.utils.decorators import authed_only,get_current_user,admins_only
 from CTFd.plugins import register_plugin_assets_directory
 from CTFd.plugins.wireguard import WireguardDB
 from CTFd.utils.user import get_ip
+from CTFd.utils.decorators import ratelimit
 
 conf = None
 
@@ -58,22 +62,21 @@ def load(app):
         for plugin in get_plugin_names():
             module = "." + plugin
             module = importlib.import_module(module, package="CTFd.plugins.fw_challenges")
-            module.load(app)
+            if 'load' in dir(module):
+                module.load(app)
             print(" * Loaded fw_challenges module, %s" % module)
     else:
         print("SAFE_MODE is enabled. Skipping plugin loading.")
-    
+   
+    @admins_only
     @app.route('/plugins/fw_challenges/setlog',methods=['POST'])
     def setlog():
-        ip = get_ip(req=request)
-        if ip not in conf['accessips']:
-            return
-        data = request.get_json()
+        data = flask.request.get_json()
         userid = WireguardDB.query.filter_by(index=data['index']).first().userid
         try:
-            EndpointLog.query.filter_by(userid, data['endpoint']).one()
+            EndpointLog.query.filter_by(userid=userid, endpoint=data['endpoint']).one()
         except:
             db.session.add(EndpointLog(userid, data['endpoint']))
             db.session.commit()
-        return True
+        return flask.jsonify(True)
 

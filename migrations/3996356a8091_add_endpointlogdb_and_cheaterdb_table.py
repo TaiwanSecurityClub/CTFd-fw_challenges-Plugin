@@ -37,10 +37,17 @@ def upgrade(op=None):
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
-        "fwChallenge",
+        "fw_challenge",
         sa.Column("id", sa.Integer, nullable=False),
-        sa.Column("endpoint", sa.JSON, nullable=False, default=[]),
+        sa.Column("endpoints", sa.JSON, nullable=False, default=[]),
         sa.ForeignKeyConstraint(["id"], ["challenges.id"], ondelete="CASCADE"),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_table(
+        "fw_dynamic_challenge",
+        sa.Column("id", sa.Integer, nullable=False),
+        sa.Column("endpoints", sa.JSON, nullable=False, default=[]),
+        sa.ForeignKeyConstraint(["id"], ["dynamic_challenge.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
 
@@ -48,5 +55,6 @@ def upgrade(op=None):
 def downgrade(op=None) -> None:
     op.drop_table("endpointLog")
     op.drop_table("cheater")
-    op.drop_table("fwChallenge")
+    op.drop_table("fw_challenge")
+    op.drop_table("fw_dynamic_challenge")
 
