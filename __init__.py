@@ -7,7 +7,6 @@ import flask
 from CTFd.models import db
 from CTFd.utils.decorators import authed_only,get_current_user,admins_only
 from CTFd.plugins import register_plugin_assets_directory
-from CTFd.plugins.wireguard import WireguardDB
 from CTFd.utils.user import get_ip
 from CTFd.utils.decorators import ratelimit
 
@@ -72,11 +71,10 @@ def load(app):
     @app.route('/plugins/fw_challenges/setlog',methods=['POST'])
     def setlog():
         data = flask.request.get_json()
-        userid = WireguardDB.query.filter_by(index=data['index']).first().userid
         try:
-            EndpointLog.query.filter_by(userid=userid, endpoint=data['endpoint']).one()
+            EndpointLog.query.filter_by(userid=data['userid'], endpoint=data['endpoint']).one()
         except:
-            db.session.add(EndpointLog(userid, data['endpoint']))
+            db.session.add(EndpointLog(data['userid'], data['endpoint']))
             db.session.commit()
         return flask.jsonify(True)
 
