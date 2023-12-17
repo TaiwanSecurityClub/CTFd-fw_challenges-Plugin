@@ -10,6 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
+import datetime
 
 # revision identifiers, used by Alembic.
 revision: str = '3996356a8091'
@@ -24,6 +25,7 @@ def upgrade(op=None):
         sa.Column("id", sa.Integer, nullable=False, autoincrement=True),
         sa.Column("userid", sa.Integer, nullable=False),
         sa.Column("endpoint", sa.String(length=128), nullable=False),
+        sa.Column("created", sa.DateTime, default=datetime.datetime.utcnow),
         sa.ForeignKeyConstraint(["userid"], ["users.id"], ondelete="CASCADE", onupdate="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -32,6 +34,7 @@ def upgrade(op=None):
         sa.Column("id", sa.Integer, nullable=False, autoincrement=True),
         sa.Column("userid", sa.Integer, nullable=False),
         sa.Column("challengesid", sa.Integer, nullable=False),
+        sa.Column("created", sa.DateTime, default=datetime.datetime.utcnow),
         sa.ForeignKeyConstraint(["userid"], ["users.id"], ondelete="CASCADE", onupdate="CASCADE"),
         sa.ForeignKeyConstraint(["challengesid"], ["challenges.id"], ondelete="CASCADE", onupdate="CASCADE"),
         sa.PrimaryKeyConstraint("id"),

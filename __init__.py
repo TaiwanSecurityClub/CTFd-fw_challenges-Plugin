@@ -3,6 +3,7 @@ import importlib
 import os
 import json
 import flask
+import datetime
 
 from CTFd.models import db
 from CTFd.utils.decorators import authed_only,get_current_user,admins_only
@@ -11,6 +12,7 @@ from CTFd.utils.user import get_ip
 from CTFd.utils.decorators import ratelimit
 
 conf = None
+plugin_name = __name__.split('.')[-1]
 
 class EndpointLog(db.Model):
     __tablename__ = "endpointLog"
@@ -19,6 +21,7 @@ class EndpointLog(db.Model):
         db.Integer, db.ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE")
     )
     endpoint = db.Column(db.String(128))
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __init__(self, userid, endpoint):
         self.userid = userid
@@ -33,6 +36,7 @@ class Cheater(db.Model):
     challengesid = db.Column(
         db.Integer, db.ForeignKey("challenges.id", ondelete="CASCADE", onupdate="CASCADE")
     )
+    created = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
     def __init__(self, userid, challengesid):
         self.userid = userid
@@ -60,15 +64,15 @@ def load(app):
     if app.config.get("SAFE_MODE", False) is False:
         for plugin in get_plugin_names():
             module = "." + plugin
-            module = importlib.import_module(module, package="CTFd.plugins.fw_challenges")
+            module = importlib.import_module(module, package=f"CTFd.plugins.{plugin_name}")
             if 'load' in dir(module):
                 module.load(app)
-            print(" * Loaded fw_challenges module, %s" % module)
+            print(" * Loaded %s module, %s" % (plugin_name, module))
     else:
         print("SAFE_MODE is enabled. Skipping plugin loading.")
    
     @admins_only
-    @app.route('/plugins/fw_challenges/setlog',methods=['POST'])
+    @app.route(f'/plugins/{plugin_name}/setlog',methods=['POST'])
     def setlog():
         data = flask.request.get_json()
         try:
