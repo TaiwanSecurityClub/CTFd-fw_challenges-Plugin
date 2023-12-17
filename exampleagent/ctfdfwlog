@@ -1,0 +1,17 @@
+#!/bin/bash
+
+token="<token>"
+checknetwork="172.31.0.0/18"
+
+src=$(echo "$1" | grep -oP "(?<=SRC=)\\S*" | awk '{print tolower($0)}')
+dst=$(echo "$1" | grep -oP "(?<=DST=)\\S*" | awk '{print tolower($0)}')
+protocal=$(echo "$1" | grep -oP "(?<=PROTO=)\\S*" | awk '{print tolower($0)}')
+dport=$(echo "$1" | grep -oP "(?<=DPT=)\\S*" | awk '{print tolower($0)}')
+index=$(python3 -c "
+import ipaddress
+print(list(ipaddress.ip_network('$checknetwork')).index(ipaddress.ip_address('$src')))
+")
+
+userid=$(curl 172.31.200.254:8000/plugins/wireguard/getuserid -H "Authorization: Token $token" -H "Content-Type: application/json" -d "{\"index\": $index}")
+
+curl -X POST 172.31.200.254:8000/plugins/fw_challenges/setlog -H "Authorization: Token $token" -H "Content-Type: application/json" -d "{\"userid\": $userid, \"endpoint\": \"$protocal://$dst:$dport\"}"
