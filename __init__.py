@@ -11,7 +11,6 @@ from CTFd.plugins import register_plugin_assets_directory
 from CTFd.utils.user import get_ip
 from CTFd.utils.decorators import ratelimit
 
-conf = None
 plugin_name = __name__.split('.')[-1]
 
 class EndpointLog(db.Model):
@@ -41,12 +40,6 @@ class Cheater(db.Model):
     def __init__(self, userid, challengesid):
         self.userid = userid
         self.challengesid = challengesid
-
-def loadconfig():
-    global conf
-    dir_path = Path(__file__).parent.resolve()
-    with open(os.path.join(dir_path, 'config.yaml')) as f:
-        conf = yaml.load(f, Loader=yaml.FullLoader)
 
 def get_plugin_names():
     modules = sorted(glob.glob(os.path.dirname(__file__) + "/*"))

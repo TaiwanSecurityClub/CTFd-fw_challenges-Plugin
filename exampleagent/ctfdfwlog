@@ -1,6 +1,7 @@
 #!/bin/bash
 
 token="<token>"
+ctfdurl="http://172.31.200.254:8000"
 checknetwork="172.31.0.0/18"
 
 src=$(echo "$1" | grep -oP "(?<=SRC=)\\S*" | awk '{print tolower($0)}')
@@ -12,6 +13,6 @@ import ipaddress
 print(list(ipaddress.ip_network('$checknetwork')).index(ipaddress.ip_address('$src')))
 ")
 
-userid=$(curl 172.31.200.254:8000/plugins/wireguard/getuserid -H "Authorization: Token $token" -H "Content-Type: application/json" -d "{\"index\": $index}")
+userid=$(curl $ctfdurl/plugins/wireguard/getuserid -H "Authorization: Token $token" -H "Content-Type: application/json" -d "{\"index\": $index}")
 
-curl -X POST 172.31.200.254:8000/plugins/fw_challenges/setlog -H "Authorization: Token $token" -H "Content-Type: application/json" -d "{\"userid\": $userid, \"endpoint\": \"$protocal://$dst:$dport\"}"
+curl -X POST $ctfdurl/plugins/fw_challenges/setlog -H "Authorization: Token $token" -H "Content-Type: application/json" -d "{\"userid\": $userid, \"endpoint\": \"$protocal://$dst:$dport\"}"
